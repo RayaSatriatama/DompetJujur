@@ -15,6 +15,7 @@ export function ReflectionStream({ outcome, reflectionCode, fallbackText }: Refl
   const { completion, isLoading, complete } = useCompletion({
     api: '/api/ai/summary',
     credentials: 'include',
+    streamProtocol: 'text',
     onError: (error) => {
       console.error('[ReflectionStream] AI Stream Error:', error);
       setHasError(true);

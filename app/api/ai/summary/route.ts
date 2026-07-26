@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const { outcome, reflectionCode } = await req.json();
 
     const isDelayed = outcome === 'delayed' || outcome === 'redirected';
-    
+
     // Map reflection code to readable text for AI
     const reflectionMap: Record<string, string> = {
       calmer: 'lebih tenang',
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     if (!apiKey) {
       console.warn('[summary] No OPENROUTER_API_KEY - returning static fallback');
-      const fallback = isDelayed 
+      const fallback = isDelayed
         ? 'Kamu berhasil menjeda. Itu keputusan yang bijak.'
         : 'Jujur pada diri sendiri itu langkah pertama yang baik.'
       return new Response(fallback)
@@ -51,11 +51,11 @@ export async function POST(req: Request) {
       ],
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('[summary] API Error:', error);
     return new Response(
-      'Setiap langkah kecil untuk jujur pada diri sendiri adalah awal yang baik.', 
+      'Setiap langkah kecil untuk jujur pada diri sendiri adalah awal yang baik.',
       { status: 200 }
     );
   }

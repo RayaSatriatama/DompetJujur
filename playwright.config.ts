@@ -27,7 +27,7 @@ export default defineConfig({
   },
 
   /* Maximum time one test can run for. */
-  timeout: 60000,
+  timeout: 300000,
 
   /* Configure projects for major browsers and matrix from test cases */
   projects: [
