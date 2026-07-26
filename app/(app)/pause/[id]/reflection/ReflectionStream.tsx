@@ -14,9 +14,13 @@ export function ReflectionStream({ outcome, reflectionCode, fallbackText }: Refl
 
   const { completion, isLoading, complete } = useCompletion({
     api: '/api/ai/summary',
+    credentials: 'include',
     onError: (error) => {
-      console.error('AI Stream Error:', error);
+      console.error('[ReflectionStream] AI Stream Error:', error);
       setHasError(true);
+    },
+    onFinish: (prompt, completion) => {
+      console.log('[ReflectionStream] Completed. Length:', completion.length);
     },
   });
 
@@ -27,9 +31,11 @@ export function ReflectionStream({ outcome, reflectionCode, fallbackText }: Refl
     hasStarted.current = true;
 
     // Start generating automatically on mount
+    console.log('[ReflectionStream] Starting completion with:', { outcome, reflectionCode });
     complete('', {
       body: { outcome, reflectionCode }
-    }).catch(() => {
+    }).catch((err) => {
+      console.error('[ReflectionStream] complete() rejected:', err);
       setHasError(true);
     });
   }, [complete, outcome, reflectionCode]);
