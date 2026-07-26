@@ -5,6 +5,95 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Moon, BarChart3, TrendingUp, Calendar, AlertCircle } from 'lucide-react'
 
+// --- E2E Mock Helper ---
+function generateMockHistory(scenario: string) {
+  const now = new Date()
+  const currentMonth = now.toISOString()
+  
+  const createSession = (outcome: 'delayed' | 'proceeded', amount: number, trigger: string, hour = 14) => {
+    const d = new Date(now)
+    d.setHours(hour, 0, 0, 0)
+    return {
+      id: Math.random().toString(),
+      user_id: 'e2e',
+      amount: amount,
+      outcome: outcome,
+      trigger_type: trigger,
+      delay_duration_minutes: outcome === 'delayed' ? 60 : 0,
+      created_at: d.toISOString(),
+    }
+  }
+
+  if (scenario === 'empty') return []
+  
+  if (scenario === 'dash-002') {
+    // 8 current-month sessions, 5 delayed, specific nominals
+    return [
+      createSession('delayed', 300000, 'boredom_escape'),
+      createSession('delayed', 300000, 'boredom_escape'),
+      createSession('delayed', 300000, 'boredom_escape'), 
+      createSession('delayed', 300000, 'stress'),
+      createSession('delayed', 300000, 'stress'), // sum of delayed: 1.5m
+      createSession('proceeded', 200000, 'stress'),
+      createSession('proceeded', 200000, 'payday'),
+      createSession('proceeded', 200000, 'other'),
+    ]
+  }
+
+  if (scenario === 'dash-006') {
+    // Top trigger is stress
+    return [
+      createSession('delayed', 100000, 'stress'),
+      createSession('delayed', 100000, 'stress'),
+      createSession('delayed', 100000, 'stress'),
+      createSession('delayed', 100000, 'boredom'),
+      createSession('delayed', 100000, 'boredom'),
+    ]
+  }
+  
+  if (scenario === 'dash-007') {
+    // Tie breaker: 'stress' and 'boredom' both have 2. 
+    return [
+      createSession('delayed', 100000, 'stress'),
+      createSession('delayed', 100000, 'stress'),
+      createSession('delayed', 100000, 'boredom'),
+      createSession('delayed', 100000, 'boredom'),
+    ]
+  }
+  
+  if (scenario === 'dash-011') {
+    // Month boundary: 2 this month, 2 last month
+    const s1 = createSession('delayed', 100000, 'stress')
+    const s2 = createSession('delayed', 100000, 'stress')
+    const s3 = createSession('delayed', 100000, 'stress')
+    const s4 = createSession('delayed', 100000, 'stress')
+    
+    const lastMonth = new Date(now)
+    lastMonth.setMonth(lastMonth.getMonth() - 1)
+    s3.created_at = lastMonth.toISOString()
+    s4.created_at = lastMonth.toISOString()
+    
+    return [s1, s2, s3, s4]
+  }
+  
+  if (scenario === 'dash-008') {
+    // 8 sessions, 4 late night (> 22:00)
+    return [
+      createSession('delayed', 100000, 'stress', 23),
+      createSession('delayed', 100000, 'stress', 23),
+      createSession('delayed', 100000, 'stress', 23),
+      createSession('delayed', 100000, 'stress', 23),
+      createSession('delayed', 100000, 'stress', 10),
+      createSession('delayed', 100000, 'stress', 14),
+      createSession('delayed', 100000, 'stress', 15),
+      createSession('delayed', 100000, 'stress', 16),
+    ]
+  }
+
+  return []
+}
+// -----------------------
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,7 +103,14 @@ export default async function DashboardPage() {
   if (!user && !isE2E) redirect('/login')
 
   const userId = user?.id || 'e2e-mock-user-id'
-  const history = await getHistory(userId)
+  let history = await getHistory(userId)
+  
+  if (isE2E) {
+    const scenario = cookieStore.get('e2e-scenario')?.value
+    if (scenario) {
+      history = generateMockHistory(scenario)
+    }
+  }
 
   if (history.length === 0) {
     return (
@@ -45,14 +141,21 @@ export default async function DashboardPage() {
     )
   }
 
-  // Calculate stats
-  const totalSessions = history.length
-  const delayedSessions = history.filter(h => h.outcome === 'delayed' || h.outcome === 'redirected')
+  // Filter by current month
+  const now = new Date()
+  const currentMonthHistory = history.filter(h => {
+    const d = new Date(h.created_at)
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+  })
+
+  // Calculate stats for current month
+  const totalSessions = currentMonthHistory.length
+  const delayedSessions = currentMonthHistory.filter(h => h.outcome === 'delayed' || h.outcome === 'redirected')
   const totalDelayedCount = delayedSessions.length
   const totalDelayedAmount = delayedSessions.reduce((acc, curr) => acc + Number(curr.amount), 0)
 
   // Most frequent trigger
-  const triggerCounts = history.reduce((acc, curr) => {
+  const triggerCounts = currentMonthHistory.reduce((acc, curr) => {
     if (curr.trigger_type) {
       acc[curr.trigger_type] = (acc[curr.trigger_type] || 0) + 1
     }
@@ -67,6 +170,12 @@ export default async function DashboardPage() {
       maxTriggerCount = count
     }
   }
+
+  // Calculate late night sessions
+  const lateNightSessions = currentMonthHistory.filter(h => {
+    const hour = new Date(h.created_at).getHours()
+    return hour >= 22 || hour < 4 // 10 PM to 4 AM
+  }).length
 
   return (
     <div className="flex flex-col flex-1 p-6 lg:p-8 pb-24 lg:pb-8 space-y-6 lg:space-y-8 animate-in fade-in bg-[#F9FAFB] lg:bg-white min-h-screen w-full max-w-5xl mx-auto">
@@ -127,27 +236,16 @@ export default async function DashboardPage() {
           </div>
           
           <div className="flex items-end justify-between h-40 lg:h-64 w-full px-2 lg:px-4 mt-auto">
-            {/* Mock Bar Chart */}
-            {[
-              { day: 'Sen', val: 0 },
-              { day: 'Sel', val: 1 },
-              { day: 'Rab', val: 2 },
-              { day: 'Kam', val: 1 },
-              { day: 'Jum', val: 2 },
-              { day: 'Sab', val: 1 },
-              { day: 'Min', val: 1 }
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 group w-full">
-                <span className="text-xs font-bold text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                  {item.val > 0 ? item.val : ''}
-                </span>
-                <div 
-                  className={`w-8 lg:w-16 rounded-t-md transition-all duration-500 ease-out ${item.val > 0 ? 'bg-primary/80 group-hover:bg-primary cursor-pointer' : 'bg-transparent'}`} 
-                  style={{ height: item.val > 0 ? `${item.val * (100 / 3)}%` : '4px' }}
-                ></div>
-                <span className="text-[10px] lg:text-sm font-medium text-muted-foreground mt-1">{item.day}</span>
-              </div>
-            ))}
+            {/* Chart placeholder */}
+            <div className="flex h-full w-full items-end justify-between gap-2 lg:gap-4 px-2">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 group w-full h-full justify-end">
+                  <div 
+                    className={`w-full max-w-[40px] rounded-t-md transition-all duration-500 ease-out ${i === 6 ? 'bg-primary cursor-pointer h-1/2' : 'bg-primary/20 h-4'}`}
+                  ></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -160,7 +258,10 @@ export default async function DashboardPage() {
             <div className="flex flex-col">
               <h4 className="hidden lg:block text-lg font-bold text-[#265C4B] mb-2">Insight Mingguan</h4>
               <p className="text-sm lg:text-base text-[#265C4B] font-medium leading-relaxed">
-                {maxTriggerCount} dari {totalSessions} sesi terjadi di waktu rawanmu. Cobalah untuk menjauhi aplikasi e-commerce pada jam tersebut.
+                {lateNightSessions > 0 
+                  ? `${lateNightSessions} dari ${totalSessions} sesi terjadi di waktu rawan larut malam (di atas jam 22:00). Cobalah untuk menjauhi aplikasi e-commerce pada jam tersebut.`
+                  : `Pola belanjamu cukup baik bulan ini. Pertahankan!`
+                }
               </p>
             </div>
           </div>
