@@ -6,10 +6,12 @@ import { useEffect, useState, useRef } from 'react';
 interface ReflectionStreamProps {
   outcome: string;
   reflectionCode: string;
+  triggerType?: string;
+  amount?: number;
   fallbackText: React.ReactNode;
 }
 
-export function ReflectionStream({ outcome, reflectionCode, fallbackText }: ReflectionStreamProps) {
+export function ReflectionStream({ outcome, reflectionCode, triggerType, amount, fallbackText }: ReflectionStreamProps) {
   const [hasError, setHasError] = useState(false);
 
   const { completion, isLoading, complete } = useCompletion({
@@ -32,14 +34,14 @@ export function ReflectionStream({ outcome, reflectionCode, fallbackText }: Refl
     hasStarted.current = true;
 
     // Start generating automatically on mount
-    console.log('[ReflectionStream] Starting completion with:', { outcome, reflectionCode });
+    console.log('[ReflectionStream] Starting completion with:', { outcome, reflectionCode, triggerType, amount });
     complete('', {
-      body: { outcome, reflectionCode }
+      body: { outcome, reflectionCode, triggerType, amount }
     }).catch((err) => {
       console.error('[ReflectionStream] complete() rejected:', err);
       setHasError(true);
     });
-  }, [complete, outcome, reflectionCode]);
+  }, [complete, outcome, reflectionCode, triggerType, amount]);
 
   // If streaming failed, show the fallback text
   if (hasError) {

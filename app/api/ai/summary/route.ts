@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   console.log('[summary] OPENROUTER_API_KEY present:', !!apiKey);
 
   try {
-    const { outcome, reflectionCode } = await req.json();
+    const { outcome, reflectionCode, triggerType, amount } = await req.json();
 
     const isDelayed = outcome === 'delayed' || outcome === 'redirected';
 
@@ -27,10 +27,29 @@ export async function POST(req: Request) {
       skipped: 'melewati refleksi',
     };
 
+    // Map trigger type to readable text for AI
+    const triggerMap: Record<string, string> = {
+      stress: 'sedang stres',
+      payday: 'baru gajian',
+      chasing_loss: 'ingin balik modal',
+      boredom_escape: 'bosan / butuh pelarian',
+      paylater_limit: 'tergoda limit Paylater',
+      other: 'alasan lainnya'
+    };
+
     const userReflection = reflectionMap[reflectionCode] || 'tidak diketahui';
     const actionResult = isDelayed ? 'berhasil menunda' : 'tetap melanjutkan';
+    const formattedAmount = amount ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount) : '';
+    const triggerContext = triggerType ? (triggerMap[triggerType] || 'alasan tertentu') : 'alasan tertentu';
 
-    const systemPrompt = `Kamu asisten suportif DompetJujur. Pengguna baru selesai jeda 90 detik, hasilnya: ${actionResult}, perasaannya: ${userReflection}. Tulis TEPAT 1-2 kalimat singkat, empati, kasual bahasa Indonesia, tanpa emoji, tanpa nasihat keuangan.`;
+    const systemPrompt = `Kamu asisten suportif DompetJujur. Pengguna baru saja menjeda keinginan belanja impulsif${formattedAmount ? ` sebesar ${formattedAmount}` : ''} karena ${triggerContext}.
+Hasil akhir: ${actionResult}. Perasaan saat ini: ${userReflection}.
+Berikan insight personal (mengapa ini terjadi) ATAU saran kebiasaan kecil (apa yang bisa dilakukan selanjutnya).
+Aturan:
+- TEPAT 1-2 kalimat singkat.
+- Empati, suportif, kasual bahasa Indonesia.
+- Jangan menggurui atau menghakimi.
+- Tanpa emoji, tanpa nasihat investasi/keuangan formal.`;
 
     if (!apiKey) {
       console.warn('[summary] No OPENROUTER_API_KEY - returning static fallback');

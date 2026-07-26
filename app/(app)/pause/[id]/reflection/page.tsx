@@ -89,7 +89,9 @@ export default async function ReflectionPage(props: { params: Promise<{ id: stri
               </div>
               <ReflectionStream 
                 outcome={session.outcome} 
-                reflectionCode={reflectionCode} 
+                reflectionCode={reflectionCode}
+                triggerType={session.trigger_type}
+                amount={session.amount}
                 fallbackText={fallbackText} 
               />
             </div>
