@@ -1,0 +1,3 @@
+export const PAUSE_DURATION_SECONDS = 90
+export const DEMO_PAUSE_SECONDS = 12
+export const INTENT_UNLOCK_SECONDS = 30
