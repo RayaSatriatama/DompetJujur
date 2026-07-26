@@ -61,12 +61,16 @@ export default async function OutcomePage(props: { params: Promise<{ id: string 
     const code = formData.get('code') as string
     const sb = await createClient()
     
-    await sb.from('reflection_entries').insert({
-      user_id: user!.id,
-      session_id: session.id,
-      reflection_code: code || 'skipped',
-      note: null
-    } as any)
+    try {
+      await sb.from('reflection_entries').insert({
+        user_id: user!.id,
+        session_id: session.id,
+        reflection_code: code || 'skipped',
+        note: null
+      } as any)
+    } catch (e) {
+      console.error('Reflection insert error:', e)
+    }
     
     // Redirect to AI reflection page (Mockup 13)
     redirect(`/pause/${id}/reflection`)
