@@ -9,7 +9,7 @@ test.describe('Dashboard and Aggregations (DASH-*, HOME-*)', () => {
     await page.getByLabel('Email').fill('user_dashboard@test.local');
     await page.getByRole('button', { name: /kirim tautan/i }).click();
     await page.getByLabel('Kode OTP').fill('123456');
-    await page.getByRole('button', { name: /verifikasi otp/i }).click();
+    await page.getByRole('button', { name: /verifikasi masuk/i }).click();
     
     // Assume this user already completed onboarding
     await expect(page).toHaveURL(/\/dashboard/);

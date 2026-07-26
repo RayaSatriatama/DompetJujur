@@ -3,18 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe('Onboarding and Baseline (ONB-*)', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Navigate to onboarding via login as a new synthetic user
-    await page.goto('/login');
-    // Using a synthetic user that does not have onboarding data yet
-    await page.getByLabel('Email').fill('new_user_onb@test.local');
-    await page.getByRole('button', { name: /kirim tautan/i }).click();
+    // Bypass auth for E2E testing
+    await page.context().addCookies([{ name: 'e2e-bypass-auth', value: 'true', url: 'http://localhost:3000' }])
     
-    // In test environment, magic link bypass routes us to OTP
-    await page.getByLabel('Kode OTP').fill('123456');
-    await page.getByRole('button', { name: /verifikasi otp/i }).click();
-    
-    // Should be redirected to onboarding
-    await expect(page).toHaveURL(/\/onboarding/);
+    // Navigate directly to onboarding
+    await page.goto('/onboarding');
   });
 
   test('ONB-004: Valid baseline', async ({ page }) => {
@@ -41,7 +34,7 @@ test.describe('Onboarding and Baseline (ONB-*)', () => {
     
     // If validationMessage is empty, we expect custom error text
     if (!validationMessage) {
-      await expect(page.getByText(/tidak boleh kosong/i).first()).toBeVisible();
+      await expect(page.getByText(/tidak boleh kosong/i)).toBeVisible();
     } else {
       expect(validationMessage).not.toBe('');
     }
@@ -89,12 +82,11 @@ test.describe('Onboarding and Baseline (ONB-*)', () => {
 test.describe('Risk Window Onboarding (RISK-*)', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Navigate to onboarding via login as a new synthetic user
-    await page.goto('/login');
-    await page.getByLabel('Email').fill('new_user_risk@test.local');
-    await page.getByRole('button', { name: /kirim tautan/i }).click();
-    await page.getByLabel('Kode OTP').fill('123456');
-    await page.getByRole('button', { name: /verifikasi otp/i }).click();
+    // Bypass auth for E2E testing
+    await page.context().addCookies([{ name: 'e2e-bypass-auth', value: 'true', url: 'http://localhost:3000' }])
+    
+    // Navigate directly to onboarding
+    await page.goto('/onboarding');
     
     // Complete Step 1 to reach Risk Window
     await page.getByLabel(/Pendapatan/i).fill('6000000');

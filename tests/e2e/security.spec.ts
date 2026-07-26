@@ -30,7 +30,7 @@ test.describe('Security, RLS, and LLM Mocking (SEC-*, AI-*)', () => {
     await page.getByLabel('Email').fill('user_ai@test.local');
     await page.getByRole('button', { name: /kirim tautan/i }).click();
     await page.getByLabel('Kode OTP').fill('123456');
-    await page.getByRole('button', { name: /verifikasi otp/i }).click();
+    await page.getByRole('button', { name: /verifikasi masuk/i }).click();
     
     // Mock the AI endpoint to timeout (abort request after delay)
     await page.route('**/api/ai/summary', async route => {

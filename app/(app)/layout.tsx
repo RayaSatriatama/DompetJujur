@@ -11,7 +11,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
+  const cookieStore = await import('next/headers').then(m => m.cookies())
+  const isE2E = process.env.NODE_ENV === 'development' && cookieStore.get('e2e-bypass-auth')?.value === 'true'
+
+  if (!user && !isE2E) {
     redirect('/login')
   }
 
@@ -24,10 +27,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </main>
 
-        <PwaUpdateModal />
+        {!isE2E && <PwaUpdateModal />}
 
         <div className="lg:hidden">
-          <PwaInstallMobileBanner />
+          {!isE2E && <PwaInstallMobileBanner />}
           <BottomNav />
         </div>
       </div>

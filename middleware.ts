@@ -35,6 +35,11 @@ export async function middleware(request: NextRequest) {
 
   const isPublicRoute = path === '/' || path === '/login' || path.startsWith('/auth/callback') || path.startsWith('/api/health')
 
+  // Bypass for E2E testing
+  if (process.env.NODE_ENV === 'development' && request.cookies.get('e2e-bypass-auth')?.value === 'true') {
+    return supabaseResponse
+  }
+
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'

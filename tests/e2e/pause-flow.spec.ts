@@ -8,7 +8,7 @@ test.describe('Pause Flow (AMT-*, CON-*, TMR-*, OUT-*)', () => {
     await page.getByLabel('Email').fill('user_pause@test.local');
     await page.getByRole('button', { name: /kirim tautan/i }).click();
     await page.getByLabel('Kode OTP').fill('123456');
-    await page.getByRole('button', { name: /verifikasi otp/i }).click();
+    await page.getByRole('button', { name: /verifikasi masuk/i }).click();
     
     // Go to input amount step from Dashboard
     await page.goto('/pause/amount');
