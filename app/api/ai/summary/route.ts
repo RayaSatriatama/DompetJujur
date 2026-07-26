@@ -41,7 +41,14 @@ Tugasmu:
 4. Gunakan bahasa Indonesia kasual/sehari-hari (kamu/aku).
 5. Jangan gunakan emoji berlebihan.`;
 
-    const modelName = process.env.LLM_MODEL || 'deepseek/deepseek-v4-flash';
+    if (!process.env.OPENROUTER_API_KEY) {
+      const fallback = isDelayed 
+        ? "Luar biasa! Kamu berhasil mengendalikan dorongan di waktu rawan. Semakin sering kamu berlatih menunda, semakin ringan rasanya di kemudian hari. Teruskan kebiasaan baik ini!"
+        : "Tidak apa-apa. Hari ini mungkin berat, tapi ini bukan akhir. Kamu sudah mencoba yang terbaik. Mari kita coba lagi di kesempatan berikutnya."
+      return new Response(fallback)
+    }
+
+    const modelName = process.env.LLM_MODEL || 'google/gemini-2.5-flash';
 
     const result = streamText({
       model: openrouter(modelName),
@@ -54,6 +61,9 @@ Tugasmu:
     return result.toTextStreamResponse();
   } catch (error) {
     console.error('API Error:', error);
-    return new Response('Error connecting to AI', { status: 500 });
+    return new Response(
+      "Setiap langkah kecil untuk jujur pada diri sendiri adalah awal keputusan keuangan yang lebih sadar.", 
+      { status: 200 }
+    );
   }
 }

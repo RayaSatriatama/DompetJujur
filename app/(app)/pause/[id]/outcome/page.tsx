@@ -183,17 +183,15 @@ export default async function OutcomePage(props: { params: Promise<{ id: string 
                   </div>
                 )}
                 
-                <Button type="submit" className={`w-full h-14 rounded-xl text-lg font-bold shadow-soft-card ${hasError && !isRecovered ? 'bg-[#153B2F] hover:bg-[#153B2F]/90 text-white' : 'bg-primary hover:bg-primary/90'}`}>
-                  {hasError && !isRecovered ? 'Coba simpan lagi' : (isDelayed ? 'Selesai' : 'Kembali ke beranda')}
+                <Button type="submit" className={`w-full h-14 rounded-xl text-lg font-bold shadow-soft-card ${hasError && !isRecovered ? 'bg-[#153B2F] hover:bg-[#153B2F]/90 text-white' : 'bg-[#265C4B] hover:bg-[#265C4B]/90 text-white'}`}>
+                  {hasError && !isRecovered ? 'Coba simpan lagi' : 'Lihat Catatan AI'}
                 </Button>
                 
-                {hasError && !isRecovered && (
-                  <div className="text-center w-full">
-                    <Link href="/home" className="text-muted-foreground font-medium hover:underline text-sm w-full block py-2">
-                      Kembali nanti
-                    </Link>
-                  </div>
-                )}
+                <div className="text-center w-full">
+                  <Link href="/home" className="text-muted-foreground font-medium hover:text-foreground text-sm w-full block py-2">
+                    Selesai &amp; kembali ke Beranda
+                  </Link>
+                </div>
 
                 {/* Developer controls removed to fix Server Component error */}
               </div>
