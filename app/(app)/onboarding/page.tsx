@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfileAction } from '@/modules/profile/actions'
 import { submitFinancialBaselineAction } from '@/modules/financial-baseline/actions'
+import { saveMonthlyPlanAction } from '@/modules/monthly-plan/actions'
 import { isErr } from '@/lib/result'
 
 export default function OnboardingPage() {
@@ -110,14 +111,28 @@ export default function OnboardingPage() {
 
       if (isErr(profileResult)) throw new Error(profileResult.error)
 
+      const numIncome = parseInt(income.replace(/[^0-9-]/g, ''), 10) || 0
+      const numMandatory = parseInt(mandatory.replace(/[^0-9-]/g, ''), 10) || 0
+      const numDebt = parseInt(debt.replace(/[^0-9-]/g, ''), 10) || 0
+
       const financialResult = await submitFinancialBaselineAction({
-        monthly_income: parseInt(income.replace(/[^0-9-]/g, ''), 10) || 0,
-        mandatory_expenses: parseInt(mandatory.replace(/[^0-9-]/g, ''), 10) || 0,
-        debt_payments: parseInt(debt.replace(/[^0-9-]/g, ''), 10) || 0,
+        monthly_income: numIncome,
+        mandatory_expenses: numMandatory,
+        debt_payments: numDebt,
         income_variable: false
       })
 
       if (isErr(financialResult)) throw new Error(financialResult.error)
+
+      // Also create a monthly plan for the current month so /home doesn't redirect back to /onboarding
+      const planResult = await saveMonthlyPlanAction({
+        income: numIncome,
+        mandatory: numMandatory,
+        debt: numDebt,
+        safety_buffer: 0
+      })
+
+      if (isErr(planResult)) throw new Error(planResult.error)
 
       // Store in localStorage for legacy compatibility
       localStorage.setItem('dj_onboarding_income', income)
