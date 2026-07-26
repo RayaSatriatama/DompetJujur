@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getHistory } from '@/modules/history/repository'
 import { redirect } from 'next/navigation'
@@ -32,7 +33,7 @@ export default async function HistoryDetailPage(props: { params: Promise<{ id: s
   const filter = searchParams.filter || 'all';
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   // Fetch session detail

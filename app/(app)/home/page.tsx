@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getMonthKey, getGreeting } from '@/lib/utils'
 import { redirect } from 'next/navigation'
@@ -6,7 +7,7 @@ import { Bell, Pause, Wallet, LineChart, ChevronRight } from 'lucide-react'
 
 export default async function HomePage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', user.id).single() as { data: any }

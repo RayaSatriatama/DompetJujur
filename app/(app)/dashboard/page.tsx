@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getHistory } from '@/modules/history/repository'
 import { formatRupiah, formatTriggerLabel } from '@/lib/formatters'
@@ -96,7 +97,7 @@ function generateMockHistory(scenario: string) {
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   const cookieStore = await import('next/headers').then(m => m.cookies())
   const isE2E = process.env.NODE_ENV === 'development' && cookieStore.get('e2e-bypass-auth')?.value === 'true'
 

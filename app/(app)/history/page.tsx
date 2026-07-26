@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getHistory } from '@/modules/history/repository'
 import { formatRupiah, formatTriggerLabel } from '@/lib/formatters'
@@ -19,7 +20,7 @@ export default async function HistoryPage(props: { searchParams: Promise<{ filte
   const searchParams = await props.searchParams;
   const filter = searchParams.filter || 'all';
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   const history = await getHistory(user.id)

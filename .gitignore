@@ -48,3 +48,4 @@ playwright/.cache
 # Agents
 .agents/
 
+supabase/.temp

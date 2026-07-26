@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../lib/supabase/auth'
 import * as React from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -9,7 +10,7 @@ import { PwaUpdateModal } from '@/components/pwa-update-modal'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
 
   const cookieStore = await import('next/headers').then(m => m.cookies())
   const isE2E = process.env.NODE_ENV === 'development' && cookieStore.get('e2e-bypass-auth')?.value === 'true'

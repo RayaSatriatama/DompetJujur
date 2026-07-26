@@ -8,6 +8,10 @@ test.describe('Dashboard and Aggregations (DASH-*, HOME-*)', () => {
   });
 
   test('DASH-001: Empty Dashboard State', async ({ page, context }) => {
+    
+    // Go to dashboard directly
+    await page.goto('/dashboard');
+    
     await context.addCookies([{ name: 'e2e-scenario', value: 'empty', url: 'http://localhost:3000' }])
     await page.goto('/dashboard');
     

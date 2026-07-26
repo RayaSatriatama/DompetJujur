@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getMonthKey } from '@/lib/utils'
 import { formatRupiah } from '@/lib/formatters'
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button'
 
 export default async function MonthlyPlanPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   const monthKey = getMonthKey()

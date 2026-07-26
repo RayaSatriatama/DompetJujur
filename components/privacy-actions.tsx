@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Download, Trash2, AlertTriangle } from 'lucide-react'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -72,12 +73,14 @@ export function PrivacyActions() {
             >
               {isDeleting ? 'Menghapus...' : 'Ya, hapus riwayat'}
             </Button>
-            <Button 
-              variant="outline" 
-              className="w-full h-12 rounded-xl font-bold"
-            >
-              Batal
-            </Button>
+            <DialogClose asChild>
+              <Button 
+                variant="outline" 
+                className="w-full h-12 rounded-xl font-bold"
+              >
+                Batal
+              </Button>
+            </DialogClose>
           </div>
         </DialogContent>
       </Dialog>
@@ -108,12 +111,14 @@ export function PrivacyActions() {
             >
               {isDeleting ? 'Menghapus...' : 'Ya, hapus permanen'}
             </Button>
-            <Button 
-              variant="outline" 
-              className="w-full h-12 rounded-xl font-bold"
-            >
-              Batal
-            </Button>
+            <DialogClose asChild>
+              <Button 
+                variant="outline" 
+                className="w-full h-12 rounded-xl font-bold"
+              >
+                Batal
+              </Button>
+            </DialogClose>
           </div>
         </DialogContent>
       </Dialog>

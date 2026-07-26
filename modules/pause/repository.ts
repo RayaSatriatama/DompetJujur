@@ -4,6 +4,8 @@ import { type PauseSession } from './types'
 import { PAUSE_DURATION_SECONDS, DEMO_PAUSE_SECONDS } from './constants'
 import { isDemoModeAllowed } from '@/lib/env'
 
+import { cookies } from 'next/headers'
+
 export async function createPauseSession(
   userId: string,
   input: CreatePauseInput
@@ -11,7 +13,10 @@ export async function createPauseSession(
   const supabase = await createClient()
 
   const isDemo = input.isDemo && isDemoModeAllowed()
-  const duration = isDemo ? DEMO_PAUSE_SECONDS : PAUSE_DURATION_SECONDS
+  const cookieStore = await cookies()
+  const isE2E = process.env.NODE_ENV === 'development' && cookieStore.get('e2e-bypass-auth')?.value === 'true'
+  
+  const duration = isE2E ? 1 : (isDemo ? DEMO_PAUSE_SECONDS : PAUSE_DURATION_SECONDS)
 
   const startedAt = new Date()
   const eligibleAt = new Date(startedAt.getTime() + duration * 1000)

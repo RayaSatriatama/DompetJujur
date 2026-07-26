@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { APP_ERRORS } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -12,7 +13,7 @@ export async function requireAuth(): Promise<Result<AuthUser, typeof APP_ERRORS.
   const {
     data: { user },
     error,
-  } = await supabase.auth.getUser()
+  } = await getAuthUser()
 
   if (error || !user) {
     return err(APP_ERRORS.UNAUTHORIZED)

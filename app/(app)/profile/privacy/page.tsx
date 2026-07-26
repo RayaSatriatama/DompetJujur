@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -8,7 +9,7 @@ import { PrivacyActions } from '@/components/privacy-actions'
 
 export default async function PrivacyPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   return (

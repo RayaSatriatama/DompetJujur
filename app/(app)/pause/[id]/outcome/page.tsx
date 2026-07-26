@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -10,7 +11,7 @@ export default async function OutcomePage(props: { params: Promise<{ id: string 
   const searchParams = await props.searchParams;
   const { id } = params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: session } = await supabase
@@ -190,17 +191,7 @@ export default async function OutcomePage(props: { params: Promise<{ id: string 
                   </div>
                 )}
 
-                {/* Developer controls to simulate states */}
-                {!hasError && !isRecovered && (
-                  <div className="flex justify-center gap-2 mt-4 opacity-10 hover:opacity-100 transition-opacity absolute bottom-4 right-4">
-                    <button type="button" onClick={() => { document.getElementById('sim_err')!.value = 'true'; document.forms[0].submit(); }} className="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded">Error</button>
-                  </div>
-                )}
-                {hasError && !isRecovered && (
-                  <div className="flex justify-center gap-2 mt-4 opacity-10 hover:opacity-100 transition-opacity absolute bottom-4 right-4">
-                    <button type="button" onClick={() => { document.getElementById('sim_rec')!.value = 'true'; document.forms[0].submit(); }} className="text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded">Recovery</button>
-                  </div>
-                )}
+                {/* Developer controls removed to fix Server Component error */}
               </div>
               
               {/* Mobile buttons when error */}

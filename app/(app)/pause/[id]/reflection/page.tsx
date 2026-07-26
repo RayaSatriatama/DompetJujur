@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -8,7 +9,7 @@ export default async function ReflectionPage(props: { params: Promise<{ id: stri
   const params = await props.params;
   const { id } = params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: session } = await supabase

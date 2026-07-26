@@ -1,3 +1,4 @@
+import { getAuthUser } from '../../../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -9,7 +10,7 @@ import { ArrowLeft, PieChart, Bus, Leaf } from 'lucide-react'
 export default async function SnapshotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: session } = await supabase
