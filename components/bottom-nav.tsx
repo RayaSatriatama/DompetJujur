@@ -15,12 +15,12 @@ export function BottomNav() {
     { name: 'Saya', href: '/profile', icon: User },
   ]
 
-  // Hide nav on specific intervention pages to prevent distraction
-  const isInterventionFlow = 
-    pathname?.includes('/pause/') && 
-    !pathname?.includes('/pause/new')
+  // Hide nav on intervention flows and dedicated full-screen pages like AI chat
+  const isHiddenPage = 
+    (pathname?.includes('/pause/') && !pathname?.includes('/pause/new')) ||
+    pathname?.startsWith('/chat')
 
-  if (isInterventionFlow) return null
+  if (isHiddenPage) return null
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/50 safe-area-pb">

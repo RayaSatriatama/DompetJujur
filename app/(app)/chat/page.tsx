@@ -209,7 +209,7 @@ export default function AiChatPage() {
       </div>
 
       {/* Input Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-border/60 z-30">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-border/60 z-40 safe-area-pb">
         <form onSubmit={handleFormSubmit} className="flex gap-2 max-w-4xl mx-auto items-center">
           <Input
             value={input}
