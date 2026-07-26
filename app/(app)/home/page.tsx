@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getMonthKey, getGreeting } from '@/lib/utils'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Bell, Pause, Wallet, LineChart, ChevronRight } from 'lucide-react'
+import { Bell, Pause, Wallet, LineChart, ChevronRight, Sparkles } from 'lucide-react'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -146,6 +146,21 @@ export default async function HomePage() {
             <span className="text-sm text-muted-foreground">Lihat pengaruh keputusan kecil</span>
           </div>
           <ChevronRight className="hidden lg:block w-5 h-5 text-muted-foreground/40 group-hover:text-primary transition-colors ml-4" />
+        <Link 
+          href="/chat"
+          className="flex flex-col lg:flex-row items-start lg:items-center p-4 lg:p-6 rounded-2xl bg-[#E7F2EC] border border-[#265C4B]/20 shadow-sm hover:shadow-soft-card transition-shadow group lg:h-auto col-span-1 lg:col-span-2"
+        >
+          <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-white flex items-center justify-center shrink-0 mb-4 lg:mb-0 lg:mr-4 shadow-sm">
+            <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+          </div>
+          <div className="flex-1 flex flex-col justify-center w-full">
+            <div className="flex items-center gap-2">
+              <span className="text-base lg:text-lg font-bold text-foreground leading-tight">Teman AI Jujur</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">AI Support</span>
+            </div>
+            <span className="text-sm text-muted-foreground mt-0.5">Diskusi privat seputar pemicu impulsif & keuangan pribadi</span>
+          </div>
+          <ChevronRight className="hidden lg:block w-5 h-5 text-primary group-hover:translate-x-1 transition-transform ml-4" />
         </Link>
         
         {/* Helper info on desktop */}

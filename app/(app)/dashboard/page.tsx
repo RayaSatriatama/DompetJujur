@@ -5,6 +5,7 @@ import { formatRupiah, formatTriggerLabel } from '@/lib/formatters'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Moon, BarChart3, TrendingUp, Calendar, AlertCircle } from 'lucide-react'
+import { AiDashboardInsight } from '@/components/ai-dashboard-insight'
 
 // --- E2E Mock Helper ---
 function generateMockHistory(scenario: string) {
@@ -250,22 +251,15 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Insight */}
+        {/* Insight AI */}
         <div className="lg:w-1/3 flex flex-col gap-4 lg:gap-6">
-          <div className="flex flex-row lg:flex-col items-center lg:items-start gap-4 p-4 lg:p-8 rounded-2xl bg-[#E7F2EC] border border-[#265C4B]/20">
-            <div className="p-3 lg:p-4 bg-white rounded-2xl shrink-0 shadow-sm">
-              <Moon className="w-6 h-6 lg:w-8 lg:h-8 text-[#265C4B]" />
-            </div>
-            <div className="flex flex-col">
-              <h4 className="hidden lg:block text-lg font-bold text-[#265C4B] mb-2">Insight Mingguan</h4>
-              <p className="text-sm lg:text-base text-[#265C4B] font-medium leading-relaxed">
-                {lateNightSessions > 0 
-                  ? `${lateNightSessions} dari ${totalSessions} sesi terjadi di waktu rawan larut malam (di atas jam 22:00). Cobalah untuk menjauhi aplikasi e-commerce pada jam tersebut.`
-                  : `Pola belanjamu cukup baik bulan ini. Pertahankan!`
-                }
-              </p>
-            </div>
-          </div>
+          <AiDashboardInsight
+            totalSessions={totalSessions}
+            delayedCount={totalDelayedCount}
+            delayedAmount={totalDelayedAmount}
+            topTrigger={mostFrequentTrigger}
+            lateNightCount={lateNightSessions}
+          />
         </div>
 
       </div>

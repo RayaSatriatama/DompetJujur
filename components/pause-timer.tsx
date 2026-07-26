@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { formatTimerSeconds } from '@/lib/formatters'
 import { getRemainingSeconds } from '@/modules/pause/timer'
-import { CloudOff, Leaf } from 'lucide-react'
+import { ShieldCheck, Leaf } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface PauseTimerProps {
@@ -46,9 +46,9 @@ export function PauseTimer({ eligibleAt, onComplete, onSkip }: PauseTimerProps) 
     <div className="flex flex-col items-center justify-between min-h-[70vh] w-full max-w-sm mx-auto p-4 animate-in fade-in zoom-in-95 duration-700">
       
       {/* Top Pill */}
-      <div className="flex items-center gap-2 bg-muted/80 text-muted-foreground text-xs font-medium px-4 py-1.5 rounded-full mt-4">
-        <CloudOff className="w-3.5 h-3.5" />
-        <span>Offline - Timer tetap berjalan</span>
+      <div className="flex items-center gap-2 bg-[#E7F2EC] text-[#265C4B] text-xs font-semibold px-4 py-1.5 rounded-full mt-4 border border-[#265C4B]/20">
+        <ShieldCheck className="w-3.5 h-3.5" />
+        <span>Mode Jeda • Privasi Terjaga</span>
       </div>
 
       {/* Circular Timer */}
