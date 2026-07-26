@@ -1,6 +1,6 @@
 import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
-import { getHistory } from '@/modules/history/repository'
+import { getHistory, type HistoryItem } from '@/modules/history/repository'
 import { formatRupiah, formatTriggerLabel } from '@/lib/formatters'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
   if (isE2E) {
     const scenario = cookieStore.get('e2e-scenario')?.value
     if (scenario) {
-      history = generateMockHistory(scenario)
+      history = (generateMockHistory(scenario) as any) as HistoryItem[]
     }
   }
 

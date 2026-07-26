@@ -7,7 +7,8 @@ export async function createReflection(
   userId: string,
   input: ReflectionInput
 ): Promise<ReflectionEntry> {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
 
   const { data, error } = await supabase
     .from('reflection_entries')
@@ -28,11 +29,12 @@ export async function createReflection(
     throw error
   }
 
-  return data
+  return data as ReflectionEntry
 }
 
 export async function getReflection(sessionId: string): Promise<ReflectionEntry | null> {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
   const { data, error } = await supabase
     .from('reflection_entries')
     .select('*')
@@ -40,5 +42,5 @@ export async function getReflection(sessionId: string): Promise<ReflectionEntry 
     .single()
 
   if (error || !data) return null
-  return data
+  return data as ReflectionEntry
 }

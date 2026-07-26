@@ -21,7 +21,7 @@ export async function createPauseSession(
   const startedAt = new Date()
   const eligibleAt = new Date(startedAt.getTime() + duration * 1000)
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('pause_sessions')
     .insert({
       user_id: userId,
@@ -31,24 +31,24 @@ export async function createPauseSession(
       started_at: startedAt.toISOString(),
       pause_eligible_at: eligibleAt.toISOString(),
       is_demo: isDemo,
-    })
+    } as any)
     .select()
-    .single()
+    .single() as any)
 
   if (error) throw error
-  return data
+  return data as PauseSession
 }
 
 export async function getPauseSession(sessionId: string): Promise<PauseSession | null> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('pause_sessions')
     .select('*')
     .eq('id', sessionId)
-    .single()
+    .single() as any)
 
   if (error || !data) return null
-  return data
+  return data as PauseSession
 }
 
 export async function updatePauseIntent(
@@ -56,7 +56,8 @@ export async function updatePauseIntent(
   intent: 'continue' | 'unsure'
 ): Promise<void> {
   const supabase = await createClient()
-  const { error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
     .from('pause_sessions')
     .update({ intent_during_pause: intent })
     .eq('id', sessionId)
@@ -69,11 +70,11 @@ export async function completePauseSession(
   input: CompletePauseInput
 ): Promise<void> {
   const supabase = await createClient()
-  const { error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
     .from('pause_sessions')
     .update({
       outcome: input.outcome,
-      urge_after: input.urgeAfter,
       completed_at: new Date().toISOString(),
     })
     .eq('id', sessionId)

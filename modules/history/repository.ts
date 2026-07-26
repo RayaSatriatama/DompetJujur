@@ -7,7 +7,8 @@ export type HistoryItem = PauseSession & {
 }
 
 export async function getHistory(userId: string): Promise<HistoryItem[]> {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
 
   // Ambil sesi yang sudah completed atau minimal punya outcome
   const { data, error } = await supabase

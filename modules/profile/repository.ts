@@ -3,7 +3,8 @@ import { type ProfileInput } from './schema'
 import { type Profile } from './types'
 
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -11,11 +12,12 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     .single()
 
   if (error || !data) return null
-  return data
+  return data as Profile
 }
 
 export async function upsertProfile(userId: string, input: ProfileInput): Promise<Profile> {
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
   const { data, error } = await supabase
     .from('profiles')
     .upsert({
@@ -29,5 +31,5 @@ export async function upsertProfile(userId: string, input: ProfileInput): Promis
     throw error
   }
 
-  return data
+  return data as Profile
 }

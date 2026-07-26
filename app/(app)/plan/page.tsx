@@ -66,7 +66,7 @@ export default function PlanPage() {
       const profileResult = await updateProfileAction({
         nickname: null, // Removed from onboarding UI
         payday_day: parseInt(payday, 10),
-        primary_risk_window: riskWindow,
+        primary_risk_window: riskWindow as any,
       })
 
       if (isErr(profileResult)) {

@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Sparkles, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Sparkles, CheckCircle2 } from 'lucide-react'
+import { ReflectionStream } from './ReflectionStream'
 
 export default async function ReflectionPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -12,16 +13,35 @@ export default async function ReflectionPage(props: { params: Promise<{ id: stri
   const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
-  const { data: session } = await supabase
+  const { data: session } = await (supabase
     .from('pause_sessions')
     .select('*')
     .eq('id', id)
     .eq('user_id', user.id)
-    .single() as any
+    .single() as any)
 
   if (!session) redirect('/home')
 
+  const { data: reflection } = await (supabase
+    .from('reflection_entries')
+    .select('reflection_code')
+    .eq('session_id', id)
+    .single() as any)
+
   const isDelayed = session.outcome === 'delayed' || session.outcome === 'redirected'
+  const reflectionCode = reflection?.reflection_code || 'skipped'
+
+  const fallbackText = isDelayed ? (
+    <p className="text-sm lg:text-base text-foreground leading-relaxed pt-2">
+      <span className="font-semibold block mb-2">Luar biasa!</span>
+      Kamu berhasil mengendalikan dorongan di waktu rawan. Semakin sering kamu berlatih menunda, semakin ringan rasanya di kemudian hari. Teruskan kebiasaan baik ini!
+    </p>
+  ) : (
+    <p className="text-sm lg:text-base text-foreground leading-relaxed pt-2">
+      <span className="font-semibold block mb-2">Tidak apa-apa.</span>
+      Hari ini mungkin berat, tapi ini bukan akhir. Kamu sudah mencoba yang terbaik. Mari kita coba lagi di kesempatan berikutnya.
+    </p>
+  );
 
   return (
     <div className="flex flex-col flex-1 min-h-screen bg-white lg:bg-[#F8FAFC] lg:items-center lg:justify-center p-0 lg:p-6 relative overflow-hidden">
@@ -62,30 +82,24 @@ export default async function ReflectionPage(props: { params: Promise<{ id: stri
           {/* Form/Insight Section (Right on Desktop) */}
           <div className="w-full lg:flex-1 flex flex-col justify-between h-full space-y-8 lg:space-y-12">
             
-            <div className="bg-[#F8FAFC] border border-border/60 rounded-2xl p-6 shadow-sm relative">
-              <div className="absolute -top-3 left-6 bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+            <div className="bg-[#F8FAFC] border border-border/60 rounded-2xl p-6 shadow-sm relative min-h-[140px]">
+              <div className="absolute -top-3 left-6 bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3" />
                 Insight AI
               </div>
-              <p className="text-sm lg:text-base text-foreground leading-relaxed pt-2">
-                {isDelayed ? (
-                  <>
-                    <span className="font-semibold block mb-2">Luar biasa!</span>
-                    Kamu berhasil mengendalikan dorongan di waktu rawan. Semakin sering kamu berlatih menunda, semakin ringan rasanya di kemudian hari. Teruskan kebiasaan baik ini!
-                  </>
-                ) : (
-                  <>
-                    <span className="font-semibold block mb-2">Tidak apa-apa.</span>
-                    Hari ini mungkin berat, tapi ini bukan akhir. Kamu sudah mencoba yang terbaik. Mari kita coba lagi di kesempatan berikutnya.
-                  </>
-                )}
-              </p>
+              <ReflectionStream 
+                outcome={session.outcome} 
+                reflectionCode={reflectionCode} 
+                fallbackText={fallbackText} 
+              />
             </div>
 
             <div className="pt-4 space-y-4 pb-12 lg:pb-0">
-              <Link href="/home" className="w-full">
-                <Button className="w-full h-14 rounded-xl text-lg font-bold shadow-soft-card bg-primary hover:bg-primary/90">
-                  Kembali ke Beranda
-                </Button>
+              <Link 
+                href="/home" 
+                className="w-full h-14 rounded-xl text-lg font-bold shadow-soft-card bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-colors"
+              >
+                Kembali ke Beranda
               </Link>
             </div>
             
