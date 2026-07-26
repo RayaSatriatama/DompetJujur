@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfileAction } from '@/modules/profile/actions'
 import { submitFinancialBaselineAction } from '@/modules/financial-baseline/actions'
+import { isErr } from '@/lib/result'
 
 export default function OnboardingPage() {
   const [step, setStep] = useState<number>(1)
@@ -107,7 +108,7 @@ export default function OnboardingPage() {
         primary_risk_window: primaryRiskWindow
       })
 
-      if (profileResult.error) throw new Error(profileResult.error)
+      if (isErr(profileResult)) throw new Error(profileResult.error)
 
       const financialResult = await submitFinancialBaselineAction({
         monthly_income: parseInt(income.replace(/[^0-9-]/g, ''), 10) || 0,
@@ -116,7 +117,7 @@ export default function OnboardingPage() {
         income_variable: false
       })
 
-      if (financialResult.error) throw new Error(financialResult.error)
+      if (isErr(financialResult)) throw new Error(financialResult.error)
 
       // Store in localStorage for legacy compatibility
       localStorage.setItem('dj_onboarding_income', income)
