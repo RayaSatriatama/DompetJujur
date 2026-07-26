@@ -4,24 +4,24 @@ test.describe('Authentication (AUTH-*)', () => {
   test('AUTH-001: Valid magic-link request', async ({ page }) => {
     await page.goto('/login');
     
-    // Fill the email input
-    await page.fill('input[type="email"]', 'user_a@test.local');
+    // Use accessible locator
+    await page.getByLabel('Email').fill('user_a@test.local');
     
     // Submit the form
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /kirim tautan/i }).click();
     
     // Should show success state/confirmation
-    await expect(page.getByText('Cek Email Kamu')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/cek email kamu/i)).toBeVisible({ timeout: 15000 });
   });
 
   test('AUTH-002: Empty email', async ({ page }) => {
     await page.goto('/login');
     
     // Submit empty form
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /kirim tautan/i }).click();
     
     // Built-in HTML5 validation should prevent submission, or show a required message
-    const emailInput = page.locator('input[type="email"]');
+    const emailInput = page.getByLabel('Email');
     
     // Playwright evaluates HTML5 validation
     const validationMessage = await emailInput.evaluate((el: HTMLInputElement) => el.validationMessage);

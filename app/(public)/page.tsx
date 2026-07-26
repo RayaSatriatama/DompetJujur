@@ -168,4 +168,5 @@ export default async function WelcomePage({
         </div>
       </div>
     </div>
+  )
 }

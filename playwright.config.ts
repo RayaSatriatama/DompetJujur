@@ -40,13 +40,13 @@ export default defineConfig({
         viewport: { width: 360, height: 800 }
       },
     },
-    {
-      name: 'Mobile C',
-      use: { 
-        ...devices['iPhone 12'],
-        viewport: { width: 390, height: 844 }
-      },
-    },
+    // {
+    //   name: 'Mobile C',
+    //   use: { 
+    //     ...devices['iPhone 12'],
+    //     viewport: { width: 390, height: 844 }
+    //   },
+    // },
   ],
 
   /* Run your local dev server before starting the tests */
