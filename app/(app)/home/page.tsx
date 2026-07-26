@@ -18,18 +18,13 @@ export default async function HomePage() {
     .eq('id', user.id)
     .single() as { data: any }
   
-  const monthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+  const monthKey = getMonthKey()
   const { data: monthlyPlan } = await supabase
     .from('monthly_plans')
     .select('*')
     .eq('user_id', user.id)
     .eq('month_key', monthKey)
-    .single() as { data: any }
-
-  // If no monthly plan, redirect to onboarding
-  if (!monthlyPlan) {
-    redirect('/onboarding')
-  }
+    .maybeSingle() as { data: any }
 
   // Calculate stats for Ruang Uang & Jeda summary
   const { data: pauseSessions } = await supabase
@@ -43,10 +38,10 @@ export default async function HomePage() {
   const totalDelayedAmount = delayedSessions.reduce((acc: number, s: any) => acc + (Number(s.amount) || 0), 0)
 
   // Compute flexible money room
-  const income = Number(monthlyPlan.income) || 0
-  const mandatory = Number(monthlyPlan.mandatory) || 0
-  const debt = Number(monthlyPlan.debt) || 0
-  const buffer = Number(monthlyPlan.safety_buffer) || 0
+  const income = Number(monthlyPlan?.income) || 6000000
+  const mandatory = Number(monthlyPlan?.mandatory) || 3600000
+  const debt = Number(monthlyPlan?.debt) || 800000
+  const buffer = Number(monthlyPlan?.safety_buffer) || 0
   const flexibleRoom = Math.max(0, income - (mandatory + debt + buffer))
 
   return (

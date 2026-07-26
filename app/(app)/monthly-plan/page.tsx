@@ -20,14 +20,10 @@ export default async function MonthlyPlanPage() {
     .eq('month_key', monthKey)
     .single() as { data: any }
 
-  if (!monthlyPlan) {
-    redirect('/onboarding')
-  }
-
-  const income = monthlyPlan.income
-  const obligations = monthlyPlan.obligations
-  const debt = monthlyPlan.debt_payments
-  const buffer = obligations * 0.2 // arbitrary buffer for display if not saved
+  const income = Number(monthlyPlan?.income) || 6000000
+  const obligations = Number(monthlyPlan?.mandatory) || 3600000
+  const debt = Number(monthlyPlan?.debt) || 800000
+  const buffer = Number(monthlyPlan?.safety_buffer) || 0
   const totalAllocated = obligations + debt + buffer
   const flexible = income - totalAllocated
 
@@ -50,7 +46,7 @@ export default async function MonthlyPlanPage() {
       </header>
 
       <div className="flex flex-col lg:flex-row lg:gap-16 flex-1">
-        
+
         {/* Left Column (Desktop) / Top Section (Mobile) */}
         <div className="flex-1 space-y-6 lg:space-y-10">
           <div className="grid grid-cols-3 gap-3">
@@ -80,7 +76,7 @@ export default async function MonthlyPlanPage() {
               <div className="bg-[#8CC6A5] flex items-center justify-center text-foreground" style={{ width: `${pctBuffer}%` }}>{pctBuffer}%</div>
               <div className="bg-[#5D80A6] flex items-center justify-center" style={{ width: `${pctFleksibel}%` }}>{pctFleksibel}%</div>
             </div>
-            
+
             <div className="flex justify-center gap-6 text-xs lg:text-sm font-medium text-muted-foreground pt-2">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
