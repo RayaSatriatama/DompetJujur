@@ -1,6 +1,6 @@
 import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
-import { getGreeting } from '@/lib/utils'
+import { getGreeting, getMonthKey } from '@/lib/utils'
 import { formatRupiah } from '@/lib/formatters'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'

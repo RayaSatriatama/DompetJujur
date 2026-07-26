@@ -42,7 +42,7 @@ export async function upsertMonthlyPlan(
       debt: input.debt,
       safety_buffer: input.safety_buffer,
       flexible_amount: flexible,
-    } as any)
+    } as any, { onConflict: 'user_id, month_key' })
     .select()
     .single() as { data: any, error: any }
 

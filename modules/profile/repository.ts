@@ -23,7 +23,7 @@ export async function upsertProfile(userId: string, input: ProfileInput): Promis
     .upsert({
       id: userId,
       ...input,
-    })
+    }, { onConflict: 'id' })
     .select()
     .single()
 
