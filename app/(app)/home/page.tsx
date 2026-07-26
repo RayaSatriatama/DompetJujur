@@ -146,6 +146,8 @@ export default async function HomePage() {
             <span className="text-sm text-muted-foreground">Lihat pengaruh keputusan kecil</span>
           </div>
           <ChevronRight className="hidden lg:block w-5 h-5 text-muted-foreground/40 group-hover:text-primary transition-colors ml-4" />
+        </Link>
+
         <Link 
           href="/chat"
           className="flex flex-col lg:flex-row items-start lg:items-center p-4 lg:p-6 rounded-2xl bg-[#E7F2EC] border border-[#265C4B]/20 shadow-sm hover:shadow-soft-card transition-shadow group lg:h-auto col-span-1 lg:col-span-2"
