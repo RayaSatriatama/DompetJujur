@@ -5,10 +5,11 @@ import { err, ok, type Result } from '@/lib/result'
 import { type AppErrorCode, APP_ERRORS } from '@/lib/errors'
 import { redirect } from 'next/navigation'
 
-export async function signInWithOtp(email: string): Promise<Result<void, string>> {
+export async function loginWithPassword(email: string, password: string): Promise<Result<void, string>> {
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
+    password,
   })
 
   if (error) {
@@ -19,17 +20,20 @@ export async function signInWithOtp(email: string): Promise<Result<void, string>
   return ok(null as any)
 }
 
-export async function verifyOtp(email: string, token: string): Promise<Result<void, string>> {
+export async function registerWithPassword(email: string, password: string): Promise<Result<void, string>> {
   const supabase = await createClient()
-  const { error } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.signUp({
     email,
-    token,
-    type: 'email',
+    password,
   })
 
   if (error) {
-    console.error('Verify OTP Error:', error)
+    console.error('Sign Up Error:', error)
     return err(error.message)
+  }
+
+  if (!data.session) {
+    return err('Registrasi berhasil, tetapi fitur "Confirm Email" di Supabase masih aktif. Silakan matikan terlebih dahulu agar Anda bisa langsung masuk.')
   }
 
   return ok(null as any)
