@@ -4,6 +4,7 @@ import { getMonthKey, getGreeting } from '@/lib/utils'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Bell, Pause, Wallet, LineChart, ChevronRight, Sparkles } from 'lucide-react'
+import { NotificationTrigger } from '@/components/notification-trigger'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -74,13 +75,10 @@ export default async function HomePage() {
       <header className="relative pt-2 space-y-4 lg:space-y-6 max-w-4xl mx-auto w-full">
         <div className="flex justify-between items-center mb-6 lg:mb-0 lg:hidden">
           <h1 className="text-xl font-bold tracking-tight text-foreground">Beranda</h1>
-          <button className="p-2 -mr-2 rounded-full hover:bg-muted transition-colors relative">
-            <Bell className="w-5 h-5 text-foreground" />
-            <div className="absolute top-2 right-2.5 w-2 h-2 bg-destructive rounded-full"></div>
-          </button>
+          <NotificationTrigger riskWindowLabel={profile?.primary_risk_window} />
         </div>
         
-        <div className="lg:flex lg:justify-between lg:items-end">
+        <div className="flex justify-between items-end">
           <div>
             <h2 className="text-lg lg:text-3xl font-bold text-foreground tracking-tight">
               {getGreeting()}, {profile?.nickname || 'Kawan'}.
