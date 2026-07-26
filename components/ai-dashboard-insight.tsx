@@ -24,6 +24,8 @@ export function AiDashboardInsight({
 
   const { completion, isLoading, complete } = useCompletion({
     api: '/api/ai/dashboard',
+    credentials: 'include',
+    streamProtocol: 'text',
     onError: (err) => {
       console.error('AI Insight Error:', err)
       setHasError(true)

@@ -47,3 +47,7 @@ blob-report/
 playwright/.cache
 
 supabase/.temp
+
+# Dummy test data
+DompetJujur_Dashboard_Test_Data_250.xlsx
+DompetJujur_5_Persona_Analysis_Cases.md
