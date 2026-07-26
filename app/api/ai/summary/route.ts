@@ -49,7 +49,6 @@ export async function POST(req: Request) {
       messages: [
         { role: 'user', content: 'Tulis catatannya sekarang.' }
       ],
-      maxTokens: 80,
     });
 
     return result.toTextStreamResponse();
