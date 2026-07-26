@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       ],
     });
 
-    return result.toTextStreamResponse();
+    return result.toDataStreamResponse();
   } catch (error) {
     console.error('[summary] API Error:', error);
     return new Response(
