@@ -4,7 +4,7 @@ import { getGreeting, getMonthKey } from '@/lib/utils'
 import { formatRupiah } from '@/lib/formatters'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, Wallet, LineChart, ChevronRight, Sparkles, Clock } from 'lucide-react'
+import { Shield, Wallet, LineChart, ChevronRight, Sparkles, Clock, Download } from 'lucide-react'
 import { NotificationTrigger } from '@/components/notification-trigger'
 
 export default async function HomePage() {
@@ -55,7 +55,13 @@ export default async function HomePage() {
           </div>
           <span className="text-xl font-extrabold text-[#16211D] tracking-tight">DompetJujur</span>
         </div>
-        <NotificationTrigger riskWindowLabel={profile?.primary_risk_window} />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#E7F2EC] text-[#265C4B] rounded-full text-xs font-semibold border border-[#265C4B]/20">
+            <Download className="w-3.5 h-3.5" />
+            <span>Pasang aplikasi</span>
+          </div>
+          <NotificationTrigger riskWindowLabel={profile?.primary_risk_window} />
+        </div>
       </header>
 
       {/* Greeting Banner */}
@@ -72,17 +78,21 @@ export default async function HomePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 pt-1">
         
         {/* 1. Main Action Card ("Jeda") */}
-        <div className="relative overflow-hidden rounded-3xl bg-[#E7F2EC] border border-[#265C4B]/20 p-6 lg:p-8 flex flex-col justify-between shadow-sm group">
+        <div className="relative overflow-hidden rounded-3xl bg-[#E7F2EC] border border-[#265C4B]/20 p-6 lg:p-8 flex flex-col justify-between shadow-sm group min-h-[220px]">
           
-          {/* Subtle Decorative Leaf Svg in Background */}
-          <div className="absolute right-0 bottom-0 opacity-15 pointer-events-none translate-x-4 translate-y-4">
-            <svg width="180" height="180" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M50 0C50 27.6142 27.6142 50 0 50C27.6142 50 50 72.3858 50 100C50 72.3858 72.3858 50 100 50C72.3858 50 50 27.6142 50 0Z" fill="#265C4B"/>
+          {/* Botanical Leaf Branch Svg in Background matching Poster */}
+          <div className="absolute right-2 bottom-1 pointer-events-none text-[#265C4B]/25">
+            <svg className="w-28 h-32 lg:w-36 lg:h-40" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M60 135C58 90 95 30 110 10" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
+              <path d="M60 110C40 105 25 85 30 65C45 65 60 85 60 110Z" fill="currentColor"/>
+              <path d="M65 85C85 75 100 55 95 35C80 38 65 60 65 85Z" fill="currentColor"/>
+              <path d="M55 60C38 52 28 35 32 18C48 20 56 38 55 60Z" fill="currentColor"/>
+              <path d="M75 40C92 30 102 15 98 2C83 6 74 22 75 40Z" fill="currentColor"/>
             </svg>
           </div>
 
           <div className="space-y-2 z-10">
-            <span className="text-xs font-semibold text-[#265C4B]/80 uppercase tracking-wider">Lagi ada dorongan?</span>
+            <span className="text-xs font-semibold text-[#265C4B]/90 uppercase tracking-wider">Lagi ada dorongan?</span>
             <h3 className="text-2xl lg:text-3xl font-extrabold text-[#16211D] leading-tight">
               Buat jarak<br />90 detik.
             </h3>
