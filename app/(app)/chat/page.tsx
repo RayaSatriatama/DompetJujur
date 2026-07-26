@@ -1,11 +1,16 @@
 'use client'
 
-import { useChat } from '@ai-sdk/react'
 import { useRef, useEffect, useState } from 'react'
 import { ArrowLeft, Send, Sparkles, Bot, User, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+
+interface Message {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+}
 
 const SUGGESTED_PROMPTS = [
   'Bagaimana cara menahan diri dari checkout Paylater saat gajian?',
@@ -15,28 +20,88 @@ const SUGGESTED_PROMPTS = [
 ]
 
 export default function AiChatPage() {
-  const { messages, append, status } = useChat({
-    api: '/api/ai/chat',
-  })
-
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
-  const isLoading = status === 'streaming' || status === 'submitted'
+  const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
 
+  const sendMessage = async (userContent: string) => {
+    if (!userContent.trim() || isLoading) return
+
+    const userMessage: Message = {
+      id: Math.random().toString(),
+      role: 'user',
+      content: userContent,
+    }
+
+    const updatedMessages = [...messages, userMessage]
+    setMessages(updatedMessages)
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })),
+        }),
+      })
+
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to fetch AI response')
+      }
+
+      const assistantId = Math.random().toString()
+      setMessages((prev) => [
+        ...prev,
+        { id: assistantId, role: 'assistant', content: '' },
+      ])
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let assistantText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        assistantText += chunk
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId ? { ...msg, content: assistantText } : msg
+          )
+        )
+      }
+    } catch (err) {
+      console.error('Chat error:', err)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Math.random().toString(),
+          role: 'assistant',
+          content: 'Maaf, terjadi kendala koneksi dengan Teman AI. Silakan coba lagi.',
+        },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handlePromptClick = (promptText: string) => {
-    append({ role: 'user', content: promptText })
+    sendMessage(promptText)
   }
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || isLoading) return
     const text = input.trim()
+    if (!text) return
     setInput('')
-    append({ role: 'user', content: text })
+    sendMessage(text)
   }
 
   return (
