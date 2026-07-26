@@ -12,11 +12,11 @@ export default async function WelcomePage({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   
   if (params.error) {
-    redirect(`${baseUrl}/login?error=${params.error_description || params.error}`)
+    redirect(`/login?error=${params.error_description || params.error}`)
   }
 
   if (params.code) {
-    redirect(`${baseUrl}/auth/callback?code=${params.code}`)
+    redirect(`/auth/callback?code=${params.code}`)
   }
   
   return (

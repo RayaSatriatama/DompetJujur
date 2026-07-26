@@ -1,7 +1,7 @@
 'use client';
 
 import { useCompletion } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface ReflectionStreamProps {
   outcome: string;
@@ -20,7 +20,12 @@ export function ReflectionStream({ outcome, reflectionCode, fallbackText }: Refl
     },
   });
 
+  const hasStarted = useRef(false);
+
   useEffect(() => {
+    if (hasStarted.current) return;
+    hasStarted.current = true;
+
     // Start generating automatically on mount
     complete('', {
       body: { outcome, reflectionCode }
