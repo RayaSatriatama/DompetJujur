@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Bell, ShieldCheck, Check, Clock, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 
 interface NotificationSheetProps {
   isOpen: boolean
@@ -138,10 +137,15 @@ export function NotificationSheet({ isOpen, onClose, riskWindowLabel = 'Larut Ma
                 <p className="text-[11px] text-muted-foreground">{riskWindowLabel}</p>
               </div>
             </div>
-            <Switch
-              checked={riskReminder}
-              onCheckedChange={setRiskReminder}
-            />
+            <button
+              type="button"
+              onClick={() => setRiskReminder(!riskReminder)}
+              className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors ${
+                riskReminder ? 'bg-primary justify-end' : 'bg-muted justify-start'
+              }`}
+            >
+              <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+            </button>
           </div>
 
           <div className="flex items-center justify-between p-3.5 rounded-2xl border border-border/50 bg-white shadow-sm">
@@ -154,10 +158,15 @@ export function NotificationSheet({ isOpen, onClose, riskWindowLabel = 'Larut Ma
                 <p className="text-[11px] text-muted-foreground">Pengingat menyusun ruang uang gajian</p>
               </div>
             </div>
-            <Switch
-              checked={paydayReminder}
-              onCheckedChange={setPaydayReminder}
-            />
+            <button
+              type="button"
+              onClick={() => setPaydayReminder(!paydayReminder)}
+              className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors ${
+                paydayReminder ? 'bg-primary justify-end' : 'bg-muted justify-start'
+              }`}
+            >
+              <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+            </button>
           </div>
         </div>
 
