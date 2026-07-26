@@ -1,9 +1,9 @@
 import { getAuthUser } from '../../../lib/supabase/auth'
 import { createClient } from '@/lib/supabase/server'
-import { getMonthKey, getGreeting } from '@/lib/utils'
+import { getGreeting, formatRupiah } from '@/lib/utils'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Bell, Pause, Wallet, LineChart, ChevronRight, Sparkles } from 'lucide-react'
+import { Shield, Wallet, LineChart, ChevronRight, Sparkles, Clock } from 'lucide-react'
 import { NotificationTrigger } from '@/components/notification-trigger'
 
 export default async function HomePage() {
@@ -11,9 +11,13 @@ export default async function HomePage() {
   const { data: { user } } = await getAuthUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', user.id).single() as { data: any }
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('nickname, primary_risk_window')
+    .eq('id', user.id)
+    .single() as { data: any }
   
-  const monthKey = getMonthKey()
+  const monthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
   const { data: monthlyPlan } = await supabase
     .from('monthly_plans')
     .select('*')
@@ -26,150 +30,141 @@ export default async function HomePage() {
     redirect('/onboarding')
   }
 
-  // Get most frequent trigger for the "Jeda sekarang" subtitle
-  const { data: history } = await supabase
+  // Calculate stats for Ruang Uang & Jeda summary
+  const { data: pauseSessions } = await supabase
     .from('pause_sessions')
-    .select('trigger_type')
+    .select('id, amount, outcome')
     .eq('user_id', user.id)
-  
-  let topTrigger = 'Mulai jeda baru'
-  if (history && history.length > 0) {
-    const triggerCounts = history.reduce((acc: any, curr: any) => {
-      if (curr.trigger_type) {
-        acc[curr.trigger_type] = (acc[curr.trigger_type] || 0) + 1
-      }
-      return acc
-    }, {})
-    
-    let maxCount = 0
-    let maxTrigger = ''
-    for (const [trigger, count] of Object.entries(triggerCounts)) {
-      if ((count as number) > maxCount) {
-        maxCount = count as number
-        maxTrigger = trigger
-      }
-    }
-    
-    const mapping: Record<string, string> = {
-      'stress': 'Lagi stres',
-      'bored': 'Lagi bosan',
-      'chasing_loss': 'Mau balikin kerugian',
-      'late_night': 'Larut malam',
-      'social_pressure': 'Tekanan sosial',
-      'promo': 'Melihat promo'
-    }
-    topTrigger = mapping[maxTrigger] || topTrigger
-  }
 
-  // Get total pauses this month
-  const { data: totalPauses } = await supabase
-    .from('pause_sessions')
-    .select('id', { count: 'exact' })
-    .eq('user_id', user.id)
-    .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+  const totalPausesCount = pauseSessions?.length || 0
+  const delayedSessions = pauseSessions?.filter((s: any) => s.outcome === 'delayed' || s.outcome === 'redirected') || []
+  const totalDelayedCount = delayedSessions.length
+  const totalDelayedAmount = delayedSessions.reduce((acc: number, s: any) => acc + (Number(s.amount) || 0), 0)
 
-  const pauseCount = totalPauses?.length || 0;
+  // Compute flexible money room
+  const income = Number(monthlyPlan.income) || 0
+  const mandatory = Number(monthlyPlan.mandatory) || 0
+  const debt = Number(monthlyPlan.debt) || 0
+  const buffer = Number(monthlyPlan.safety_buffer) || 0
+  const flexibleRoom = Math.max(0, income - (mandatory + debt + buffer))
 
   return (
-    <div className="flex flex-col flex-1 p-6 lg:p-12 pb-24 lg:pb-12 space-y-8 animate-in fade-in duration-500 bg-[#F8FAFC] lg:bg-white min-h-screen">
-      <header className="relative pt-2 space-y-4 lg:space-y-6 max-w-4xl mx-auto w-full">
-        <div className="flex justify-between items-center mb-6 lg:mb-0 lg:hidden">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Beranda</h1>
-          <NotificationTrigger riskWindowLabel={profile?.primary_risk_window} />
-        </div>
-        
-        <div className="flex justify-between items-end">
-          <div>
-            <h2 className="text-lg lg:text-3xl font-bold text-foreground tracking-tight">
-              {getGreeting()}, {profile?.nickname || 'Kawan'}.
-            </h2>
-            <div className="flex items-center gap-2 mt-2">
-              <p className="text-sm lg:text-base text-muted-foreground leading-relaxed">
-                Kamu sudah menjeda <span className="font-bold text-foreground">{pauseCount} dorongan</span> bulan ini.
-              </p>
-              <div className="hidden lg:flex items-center justify-center p-1 bg-muted/30 rounded-md">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-muted-foreground"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </div>
-            </div>
+    <div className="flex flex-col flex-1 p-5 lg:p-12 pb-28 lg:pb-12 space-y-6 lg:space-y-8 animate-in fade-in duration-500 bg-[#F8FAF8] min-h-screen max-w-4xl mx-auto w-full">
+      
+      {/* Top App Bar (Header matching Poster) */}
+      <header className="flex items-center justify-between pt-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#265C4B] flex items-center justify-center text-white shadow-sm">
+            <Shield className="w-5 h-5" strokeWidth={2.5} />
           </div>
+          <span className="text-xl font-extrabold text-[#16211D] tracking-tight">DompetJujur</span>
         </div>
+        <NotificationTrigger riskWindowLabel={profile?.primary_risk_window} />
       </header>
 
-      <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 pt-2 max-w-4xl mx-auto w-full">
-        {/* Main Action Card */}
-        <div className="lg:col-span-1 lg:row-span-2">
-          <Link 
-            href="/pause/new"
-            className="flex lg:flex-col items-center lg:items-start p-4 lg:p-8 rounded-2xl lg:rounded-[32px] bg-white lg:bg-[#E7F2EC] border border-border/60 lg:border-success/20 shadow-sm hover:shadow-soft-card transition-shadow group h-full"
-          >
-            <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-[#E7F2EC] lg:bg-white flex items-center justify-center shrink-0 mr-4 lg:mr-0 lg:mb-6 shadow-sm">
-              <Pause className="w-6 h-6 lg:w-8 lg:h-8 text-primary" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1 flex flex-col justify-center lg:justify-start w-full">
-              <span className="text-sm lg:text-base text-muted-foreground lg:text-primary/80 lg:font-medium lg:mb-2">{topTrigger}?</span>
-              <span className="text-base lg:text-2xl font-bold text-foreground lg:text-primary leading-tight lg:leading-snug">Buat jarak<br className="hidden lg:block"/> 90 detik.</span>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground/40 group-hover:text-primary transition-colors lg:hidden" />
-            <div className="hidden lg:flex items-center gap-2 mt-8 text-primary font-bold">
-              <span>Jeda sekarang</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
+      {/* Greeting Banner */}
+      <div className="space-y-1">
+        <h2 className="text-2xl lg:text-3xl font-extrabold text-[#16211D] tracking-tight">
+          {getGreeting()}, {profile?.nickname || 'Kawan'}.
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Kamu tidak perlu menunggu sampai keputusan terjadi.
+        </p>
+      </div>
+
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 pt-1">
+        
+        {/* 1. Main Action Card ("Jeda") */}
+        <div className="relative overflow-hidden rounded-3xl bg-[#E7F2EC] border border-[#265C4B]/20 p-6 lg:p-8 flex flex-col justify-between shadow-sm group">
+          
+          {/* Subtle Decorative Leaf Svg in Background */}
+          <div className="absolute right-0 bottom-0 opacity-15 pointer-events-none translate-x-4 translate-y-4">
+            <svg width="180" height="180" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 0C50 27.6142 27.6142 50 0 50C27.6142 50 50 72.3858 50 100C50 72.3858 72.3858 50 100 50C72.3858 50 50 27.6142 50 0Z" fill="#265C4B"/>
+            </svg>
+          </div>
+
+          <div className="space-y-2 z-10">
+            <span className="text-xs font-semibold text-[#265C4B]/80 uppercase tracking-wider">Lagi ada dorongan?</span>
+            <h3 className="text-2xl lg:text-3xl font-extrabold text-[#16211D] leading-tight">
+              Buat jarak<br />90 detik.
+            </h3>
+          </div>
+
+          <div className="pt-6 z-10">
+            <Link href="/pause/new" className="inline-block w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-[#265C4B] hover:bg-[#265C4B]/90 text-white rounded-xl text-sm font-bold px-6 py-3 shadow-md transition-all active:scale-98 flex items-center justify-center gap-2">
+                <span>Saya lagi kepikiran</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </Link>
+          </div>
         </div>
 
-        {/* Secondary Cards */}
-        <Link 
-          href="/monthly-plan"
-          className="flex flex-col lg:flex-row items-start lg:items-center p-4 lg:p-6 rounded-2xl bg-white border border-border/60 shadow-sm hover:shadow-soft-card transition-shadow group lg:h-auto"
-        >
-          <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 mb-4 lg:mb-0 lg:mr-4">
-            <Wallet className="w-6 h-6 text-muted-foreground" />
+        {/* 2. Ruang Uang Bulan Ini Card */}
+        <div className="rounded-3xl bg-white border border-[#D6DBD7] p-6 lg:p-8 flex flex-col justify-between shadow-soft-card">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ruang Uang Bulan Ini</span>
+              <h3 className="text-3xl lg:text-4xl font-extrabold text-[#16211D] tabular-nums mt-1 tracking-tight">
+                {formatRupiah(flexibleRoom)}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">Setelah kebutuhan wajib & cicilan</p>
+            </div>
+            <div className="w-10 h-10 rounded-2xl bg-muted/40 flex items-center justify-center text-[#265C4B]">
+              <Wallet className="w-5 h-5" />
+            </div>
           </div>
-          <div className="flex-1 flex flex-col justify-center w-full">
-            <span className="text-base lg:text-lg font-bold text-foreground leading-tight mb-1">Ruang uang bulan ini</span>
-            <span className="text-sm text-muted-foreground">Pantau sisa anggaran</span>
-          </div>
-          <ChevronRight className="hidden lg:block w-5 h-5 text-muted-foreground/40 group-hover:text-primary transition-colors ml-4" />
-        </Link>
 
+          {/* Impact Stats Pill */}
+          <div className="pt-4 border-t border-border/40 mt-4">
+            <div className="inline-flex items-center gap-2 bg-[#E7F2EC] text-[#265C4B] text-xs font-semibold px-3.5 py-2 rounded-full border border-[#265C4B]/20 max-w-full truncate">
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">
+                {totalDelayedCount} jeda • {formatRupiah(totalDelayedAmount)} nominal ditunda
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Dampak Jeda Card */}
         <Link 
           href="/dashboard"
-          className="flex flex-col lg:flex-row items-start lg:items-center p-4 lg:p-6 rounded-2xl bg-white border border-border/60 shadow-sm hover:shadow-soft-card transition-shadow group lg:h-auto"
+          className="rounded-3xl bg-white border border-[#D6DBD7] p-5 lg:p-6 flex items-center justify-between shadow-sm hover:shadow-soft-card transition-all group"
         >
-          <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 mb-4 lg:mb-0 lg:mr-4">
-            <LineChart className="w-6 h-6 text-muted-foreground" />
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-muted/40 flex items-center justify-center text-primary shrink-0 group-hover:bg-[#E7F2EC] transition-colors">
+              <LineChart className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-base font-bold text-[#16211D]">Dampak jeda bulan ini</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">Lihat pengaruh keputusan kecil ({totalPausesCount} total sesi)</p>
+            </div>
           </div>
-          <div className="flex-1 flex flex-col justify-center w-full">
-            <span className="text-base lg:text-lg font-bold text-foreground leading-tight mb-1">Dampak jeda bulan ini</span>
-            <span className="text-sm text-muted-foreground">Lihat pengaruh keputusan kecil</span>
-          </div>
-          <ChevronRight className="hidden lg:block w-5 h-5 text-muted-foreground/40 group-hover:text-primary transition-colors ml-4" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
         </Link>
 
+        {/* 4. Teman AI Jujur Card */}
         <Link 
           href="/chat"
-          className="flex flex-col lg:flex-row items-start lg:items-center p-4 lg:p-6 rounded-2xl bg-[#E7F2EC] border border-[#265C4B]/20 shadow-sm hover:shadow-soft-card transition-shadow group lg:h-auto col-span-1 lg:col-span-2"
+          className="rounded-3xl bg-[#E7F2EC] border border-[#265C4B]/20 p-5 lg:p-6 flex items-center justify-between shadow-sm hover:shadow-soft-card transition-all group"
         >
-          <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-white flex items-center justify-center shrink-0 mb-4 lg:mb-0 lg:mr-4 shadow-sm">
-            <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-          </div>
-          <div className="flex-1 flex flex-col justify-center w-full">
-            <div className="flex items-center gap-2">
-              <span className="text-base lg:text-lg font-bold text-foreground leading-tight">Teman AI Jujur</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">AI Support</span>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shrink-0 shadow-sm">
+              <Sparkles className="w-6 h-6 animate-pulse" />
             </div>
-            <span className="text-sm text-muted-foreground mt-0.5">Diskusi privat seputar pemicu impulsif & keuangan pribadi</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-base font-bold text-[#16211D]">Teman AI Jujur</h4>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#265C4B] text-white px-2 py-0.5 rounded-full">AI Support</span>
+              </div>
+              <p className="text-xs text-[#265C4B]/80 mt-0.5">Diskusi privat & tanpa menghakimi</p>
+            </div>
           </div>
-          <ChevronRight className="hidden lg:block w-5 h-5 text-primary group-hover:translate-x-1 transition-transform ml-4" />
+          <ChevronRight className="w-5 h-5 text-[#265C4B] group-hover:translate-x-1 transition-all" />
         </Link>
-        
-        {/* Helper info on desktop */}
-        <div className="hidden lg:flex items-start gap-4 p-5 rounded-2xl bg-[#F8FAFC] border border-border/40 mt-4 col-span-2">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6 text-muted-foreground shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-          <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-            Kendali ada pada pilihan kecil setiap hari. Kami menjaga data aktivitasmu tetap privat dan aman.
-          </p>
-        </div>
+
       </div>
     </div>
   )
