@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-background text-foreground">
       <SidebarNav />
       
-      <div className="flex-1 flex flex-col lg:ml-64 w-full h-full relative pb-16 sm:pb-0 lg:pb-0">
+      <div className="flex-1 flex flex-col lg:ml-64 w-full h-full relative pb-20 lg:pb-0">
         <main className="flex-1 flex flex-col w-full h-full relative">
           {children}
         </main>

@@ -3,14 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function OnboardingPage() {
-  // Step Management
   const [step, setStep] = useState<number>(1)
-
-  // Step 1 State
   const [income, setIncome] = useState<string>('')
   const [mandatory, setMandatory] = useState<string>('')
   const [debt, setDebt] = useState<string>('')
@@ -23,7 +22,6 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  // Format IDR
   const formatIDR = (value: string) => {
     const rawValue = value.replace(/[^0-9-]/g, '')
     if (!rawValue) return ''
@@ -35,29 +33,17 @@ export default function OnboardingPage() {
 
   const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIncome(formatIDR(e.target.value))
-    validateStep1(e.target.value, mandatory, debt)
+    setStep1Error(null)
   }
   
   const handleMandatoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMandatory(formatIDR(e.target.value))
-    validateStep1(income, e.target.value, debt)
+    setStep1Error(null)
   }
   
   const handleDebtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDebt(formatIDR(e.target.value))
-    validateStep1(income, mandatory, e.target.value)
-  }
-
-  const validateStep1 = (inc: string, man: string, deb: string) => {
     setStep1Error(null)
-    
-    const numInc = parseInt(inc.replace(/[^0-9-]/g, ''), 10) || 0
-    const numMan = parseInt(man.replace(/[^0-9-]/g, ''), 10) || 0
-    const numDeb = parseInt(deb.replace(/[^0-9-]/g, ''), 10) || 0
-
-    if (numInc < 0 || numMan < 0 || numDeb < 0) {
-      setStep1Error('Nilai tidak boleh negatif.')
-    }
   }
 
   const handleStep1Submit = (e: React.FormEvent) => {
@@ -65,9 +51,7 @@ export default function OnboardingPage() {
     setStep1Error(null)
     
     if (!income || !mandatory || !debt) {
-      // Use standard HTML5 validation or show custom message if empty
-      // But tests expect specific error
-      setStep1Error('Semua field harus diisi. Isi 0 jika tidak ada.')
+      setStep1Error('Semua kolom harus diisi. Isi 0 jika tidak ada.')
       return
     }
 
@@ -90,7 +74,6 @@ export default function OnboardingPage() {
       return
     }
 
-    // Save to local state and proceed to step 2
     setStep(2)
   }
 
@@ -121,7 +104,8 @@ export default function OnboardingPage() {
     localStorage.setItem('dj_onboarding_riskWindow', riskWindow)
     localStorage.setItem('dj_onboarding_payday', payday)
     
-    router.push('/dashboard')
+    // Redirect to home
+    router.push('/home')
   }
 
   const riskWindowOptions = [
@@ -132,177 +116,124 @@ export default function OnboardingPage() {
   ]
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
-      {/* Left Column (Desktop Only for Decorative Text) */}
-      <div className="hidden lg:flex w-[45%] h-full flex-col pt-12 px-16 relative overflow-hidden fixed top-0 bottom-0 left-0">
-        <div className="flex items-center gap-2 text-primary font-bold text-xl mb-16">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>DompetJujur</span>
-        </div>
-
-        <div className="max-w-md space-y-8 z-10">
-          <div className="space-y-3">
-            <span className="text-sm font-bold text-primary uppercase tracking-wider">Langkah {step} dari 2</span>
-            <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
-              <div className={`h-full bg-primary rounded-full transition-all duration-300 ${step === 1 ? 'w-1/2' : 'w-full'}`}></div>
-            </div>
-          </div>
-
-          {step === 1 ? (
-            <>
-              <h1 className="text-4xl font-bold tracking-tight leading-[1.1] text-foreground pt-4">
-                Biar angka punya konteks
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Cukup estimasi. DompetJujur tidak perlu melihat rekeningmu.
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-4xl font-bold tracking-tight leading-[1.1] text-foreground pt-4">
-                Kenali pola belanjamu
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Kami akan membantu kamu mengambil jeda di jam-jam rawan.
-              </p>
-            </>
-          )}
-
-          <div className="pt-8">
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-[#E7F2EC]/50 border border-success/10">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6 text-primary shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-              <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-                Data ini tersimpan aman dan hanya digunakan untuk menghitung anggaran fleksibelmu.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Column / Main Form Area (Mobile + Desktop) */}
-      <div className="w-full lg:w-[55%] lg:ml-[45%] min-h-screen bg-white lg:p-12 p-6 flex flex-col relative lg:border-l lg:border-border/40 lg:shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.05)]">
+    <div className="flex flex-col min-h-screen p-6 lg:p-0 bg-white lg:bg-[#F8FAFC] lg:items-center lg:justify-center">
+      <div className="w-full lg:max-w-md lg:bg-white lg:rounded-[32px] lg:shadow-soft-card lg:p-10 lg:border lg:border-border/50">
         
-        <header className="relative flex items-center lg:hidden pt-2 mb-8 justify-center">
+        <header className="relative flex items-center pt-2 mb-8 lg:mb-10 justify-between">
           {step === 1 ? (
-            <Link href="/login" className="absolute left-0 p-2 -ml-2 rounded-full hover:bg-muted transition-colors">
+            <Link href="/login" className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors">
               <ArrowLeft className="w-5 h-5 text-foreground" />
             </Link>
           ) : (
-            <button onClick={() => setStep(1)} className="absolute left-0 p-2 -ml-2 rounded-full hover:bg-muted transition-colors">
+            <button onClick={() => setStep(1)} className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors">
               <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>
           )}
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Langkah {step} dari 2</span>
+          
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Langkah {step} dari 2</span>
             <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
               <div className={`h-full bg-primary rounded-full transition-all duration-300 ${step === 1 ? 'w-1/2' : 'w-full'}`}></div>
             </div>
           </div>
         </header>
 
-        <div className="absolute top-8 left-8 hidden lg:block">
-          {step === 2 && (
-            <button onClick={() => setStep(1)} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Kembali
-            </button>
-          )}
-        </div>
-        
-        <div className="flex-1 w-full max-w-md mx-auto lg:mx-0 lg:ml-auto lg:mr-auto lg:my-auto flex flex-col justify-center">
-          <div className="lg:bg-white lg:rounded-[32px] lg:p-10 lg:border lg:border-border/50 lg:shadow-soft-card w-full">
-            {step === 1 ? (
-              <>
-                <div className="space-y-2 mb-10 lg:hidden">
+        <div className="flex-1 w-full max-w-sm mx-auto">
+          {step === 1 ? (
+            <>
+              <div className="space-y-2 mb-8">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                  Biar angka punya konteks
+                  Anggaran Bulanan
                 </h1>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">
-                  Cukup estimasi. DompetJujur tidak perlu melihat rekeningmu.
-                </p>
-              </div>
-                
-                <form onSubmit={handleStep1Submit} className="space-y-6 lg:space-y-8 flex flex-col">
-                  {step1Error && <div className="p-3 bg-destructive/10 text-destructive text-sm font-medium rounded-lg">{step1Error}</div>}
-                  
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="income" className="text-sm font-semibold shrink-0">Pendapatan bulanan</label>
-                    <div className="relative w-full">
-                      <div className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">Rp</div>
-                      <input
-                        id="income"
-                        type="text"
-                        inputMode="numeric"
-                        value={income}
-                        onChange={handleIncomeChange}
-                        placeholder="6.000.000"
-                        className="w-full h-14 pl-10 lg:pl-12 pr-4 font-bold rounded-xl border border-border/60 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all bg-muted/10 lg:bg-muted/5 text-lg"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="mandatory" className="text-sm font-semibold shrink-0">Kebutuhan Pokok</label>
-                    <div className="relative w-full">
-                      <div className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">Rp</div>
-                      <input
-                        id="mandatory"
-                        type="text"
-                        inputMode="numeric"
-                        value={mandatory}
-                        onChange={handleMandatoryChange}
-                        placeholder="3.600.000"
-                        className="w-full h-14 pl-10 lg:pl-12 pr-4 font-bold rounded-xl border border-border/60 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all bg-muted/10 lg:bg-muted/5 text-lg"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="debt" className="text-sm font-semibold shrink-0">Cicilan</label>
-                    <div className="relative w-full">
-                      <div className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">Rp</div>
-                      <input
-                        id="debt"
-                        type="text"
-                        inputMode="numeric"
-                        value={debt}
-                        onChange={handleDebtChange}
-                        placeholder="800.000"
-                        className="w-full h-14 pl-10 lg:pl-12 pr-4 font-bold rounded-xl border border-border/60 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all bg-muted/10 lg:bg-muted/5 text-lg"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-8 lg:pt-6 mt-auto">
-                    <Button type="submit" className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-soft-card">
-                      Lanjut
-                    </Button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <>
-                <div className="space-y-2 mb-8">
-                <h1 className="text-2xl lg:text-xl font-bold tracking-tight text-foreground leading-tight">
-                  Jam berapa Anda biasanya merasa paling ingin belanja?
-                </h1>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px] lg:hidden">
-                  Kami akan membantu kamu lebih waspada di jam-jam ini.
+                <p className="text-sm text-muted-foreground">
+                  Biar angka punya konteks. Cukup estimasi.
                 </p>
               </div>
 
-                <form onSubmit={handleStep2Submit} className="space-y-6 lg:space-y-8 flex flex-col">
-                  {step2Error && <div className="p-3 bg-destructive/10 text-destructive text-sm font-medium rounded-lg">{step2Error}</div>}
-                  
+              {step1Error && <div className="mb-4 text-sm text-destructive font-medium">{step1Error}</div>}
+              
+              <form onSubmit={handleStep1Submit} className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="income">Pendapatan bulanan</Label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">Rp</div>
+                    <Input
+                      id="income"
+                      type="text"
+                      inputMode="numeric"
+                      value={income}
+                      onChange={handleIncomeChange}
+                      placeholder="6.000.000"
+                      required
+                      className="h-12 pl-12 rounded-xl border-border/60 text-base font-bold bg-muted/10 lg:bg-muted/5"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="mandatory">Kebutuhan Pokok</Label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">Rp</div>
+                    <Input
+                      id="mandatory"
+                      type="text"
+                      inputMode="numeric"
+                      value={mandatory}
+                      onChange={handleMandatoryChange}
+                      placeholder="3.600.000"
+                      required
+                      className="h-12 pl-12 rounded-xl border-border/60 text-base font-bold bg-muted/10 lg:bg-muted/5"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="debt">Cicilan</Label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">Rp</div>
+                    <Input
+                      id="debt"
+                      type="text"
+                      inputMode="numeric"
+                      value={debt}
+                      onChange={handleDebtChange}
+                      placeholder="800.000"
+                      required
+                      className="h-12 pl-12 rounded-xl border-border/60 text-base font-bold bg-muted/10 lg:bg-muted/5"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold bg-primary hover:bg-primary/90">
+                    Lanjut
+                  </Button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="space-y-2 mb-8">
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                  Pola Kebiasaan
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Kapan Anda merasa paling ingin belanja?
+                </p>
+              </div>
+
+              {step2Error && <div className="mb-4 text-sm text-destructive font-medium">{step2Error}</div>}
+              
+              <form onSubmit={handleStep2Submit} className="space-y-6">
+                <div className="space-y-3">
+                  <Label>Jam Rawan Belanja</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {riskWindowOptions.map(option => (
                       <button
                         key={option.id}
                         type="button"
                         onClick={() => setRiskWindow(option.label)}
-                        className={`h-14 rounded-xl text-sm font-medium transition-all ${
+                        className={`h-12 rounded-xl text-sm font-medium transition-all ${
                           riskWindow === option.label 
                             ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2' 
                             : 'bg-muted/30 text-foreground hover:bg-muted/50 border border-border/50'
@@ -312,31 +243,39 @@ export default function OnboardingPage() {
                       </button>
                     ))}
                   </div>
+                </div>
 
-                  <div className="flex flex-col space-y-2 pt-4">
-                    <label htmlFor="payday" className="text-sm font-semibold shrink-0">Tanggal Gajian (1-31)</label>
-                    <input
-                      id="payday"
-                      type="number"
-                      min="1"
-                      max="31"
-                      value={payday}
-                      onChange={(e) => setPayday(e.target.value)}
-                      placeholder="25"
-                      className="w-full h-14 px-4 font-bold rounded-xl border border-border/60 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all bg-muted/10 text-lg"
-                      required
-                    />
-                  </div>
+                <div className="space-y-3">
+                  <Label htmlFor="payday">Tanggal Gajian (1-31)</Label>
+                  <Input
+                    id="payday"
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={payday}
+                    onChange={(e) => setPayday(e.target.value)}
+                    placeholder="25"
+                    required
+                    className="h-12 rounded-xl border-border/60 text-base font-bold bg-muted/10 lg:bg-muted/5"
+                  />
+                </div>
 
-                  <div className="pt-8 lg:pt-6 mt-auto">
-                    <Button type="submit" className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-soft-card" disabled={loading}>
-                      {loading ? 'Menyimpan...' : 'Selesai'}
-                    </Button>
-                  </div>
-                </form>
-              </>
-            )}
+                <div className="pt-2">
+                  <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold bg-primary hover:bg-primary/90" disabled={loading}>
+                    {loading ? 'Menyimpan...' : 'Mulai Sekarang'}
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
+
+          <div className="flex items-start gap-3 mt-12 p-4 bg-muted/30 rounded-2xl border border-border/40">
+            <Shield className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground">Privasi terjaga.</span> Data ini disimpan lokal & tidak terhubung ke bank mana pun.
+            </p>
           </div>
+          
         </div>
       </div>
     </div>
