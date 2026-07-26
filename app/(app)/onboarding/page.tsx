@@ -7,6 +7,8 @@ import { ArrowLeft, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { updateProfileAction } from '@/modules/profile/actions'
+import { submitFinancialBaselineAction } from '@/modules/financial-baseline/actions'
 
 export default function OnboardingPage() {
   const [step, setStep] = useState<number>(1)
@@ -94,18 +96,41 @@ export default function OnboardingPage() {
 
     setLoading(true)
 
-    // Simulate saving data
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Map risk window to backend enum
+    let primaryRiskWindow: any = 'other'
+    if (riskWindow === 'Sore hari') primaryRiskWindow = 'after_work'
+    if (riskWindow === 'Larut malam') primaryRiskWindow = 'late_night'
 
-    // Store in localStorage for now (mocking API)
-    localStorage.setItem('dj_onboarding_income', income)
-    localStorage.setItem('dj_onboarding_mandatory', mandatory)
-    localStorage.setItem('dj_onboarding_debt', debt)
-    localStorage.setItem('dj_onboarding_riskWindow', riskWindow)
-    localStorage.setItem('dj_onboarding_payday', payday)
-    
-    // Redirect to home
-    router.push('/home')
+    try {
+      const profileResult = await updateProfileAction({
+        payday_day: payDate,
+        primary_risk_window: primaryRiskWindow
+      })
+
+      if (profileResult.error) throw new Error(profileResult.error)
+
+      const financialResult = await submitFinancialBaselineAction({
+        monthly_income: parseInt(income.replace(/[^0-9-]/g, ''), 10) || 0,
+        mandatory_expenses: parseInt(mandatory.replace(/[^0-9-]/g, ''), 10) || 0,
+        debt_payments: parseInt(debt.replace(/[^0-9-]/g, ''), 10) || 0,
+        income_variable: false
+      })
+
+      if (financialResult.error) throw new Error(financialResult.error)
+
+      // Store in localStorage for legacy compatibility
+      localStorage.setItem('dj_onboarding_income', income)
+      localStorage.setItem('dj_onboarding_mandatory', mandatory)
+      localStorage.setItem('dj_onboarding_debt', debt)
+      localStorage.setItem('dj_onboarding_riskWindow', riskWindow)
+      localStorage.setItem('dj_onboarding_payday', payday)
+      
+      router.push('/home')
+    } catch (err) {
+      console.error(err)
+      setStep2Error('Gagal menyimpan data. Silakan coba lagi.')
+      setLoading(false)
+    }
   }
 
   const riskWindowOptions = [
