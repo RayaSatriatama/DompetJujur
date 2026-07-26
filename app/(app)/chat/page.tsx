@@ -1,7 +1,7 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { ArrowLeft, Send, Sparkles, Bot, User, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -15,10 +15,12 @@ const SUGGESTED_PROMPTS = [
 ]
 
 export default function AiChatPage() {
-  const { messages, input, handleInputChange, handleSubmit, append, isLoading } = useChat({
+  const { messages, append, status } = useChat({
     api: '/api/ai/chat',
   })
 
+  const [input, setInput] = useState('')
+  const isLoading = status === 'streaming' || status === 'submitted'
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -27,6 +29,14 @@ export default function AiChatPage() {
 
   const handlePromptClick = (promptText: string) => {
     append({ role: 'user', content: promptText })
+  }
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+    const text = input.trim()
+    setInput('')
+    append({ role: 'user', content: text })
   }
 
   return (
@@ -135,10 +145,10 @@ export default function AiChatPage() {
 
       {/* Input Bar */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-border/60 z-30">
-        <form onSubmit={handleSubmit} className="flex gap-2 max-w-4xl mx-auto items-center">
+        <form onSubmit={handleFormSubmit} className="flex gap-2 max-w-4xl mx-auto items-center">
           <Input
             value={input}
-            onChange={handleInputChange}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Tulis pesan atau pertanyaanmu di sini..."
             className="h-12 rounded-xl border-border/60 text-sm lg:text-base bg-muted/20"
           />
