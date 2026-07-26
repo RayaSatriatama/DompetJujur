@@ -15,7 +15,7 @@ const TRIGGERS = [
   { id: 'payday', label: 'Baru gajian', icon: Wallet },
   { id: 'chasing_loss', label: 'Mau balikin kerugian', icon: RefreshCcw },
   { id: 'boredom_escape', label: 'Bosan / pengin pelarian', icon: Sparkles },
-  { id: 'limit_available', label: 'Lagi pegang limit', icon: CreditCard },
+  { id: 'paylater_limit', label: 'Lagi pegang limit', icon: CreditCard },
   { id: 'other', label: 'Lainnya', icon: MoreHorizontal },
 ]
 
