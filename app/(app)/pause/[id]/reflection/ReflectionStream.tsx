@@ -56,11 +56,15 @@ export function ReflectionStream({ outcome, reflectionCode, fallbackText }: Refl
   }
 
   // Show the streamed text or fallbackText if empty
-  const content = completion || fallbackText;
+  const textContent = completion || null;
+
+  if (!textContent) {
+    return <div className="text-sm lg:text-base text-foreground leading-relaxed pt-2">{fallbackText}</div>;
+  }
 
   return (
     <p className="text-sm lg:text-base text-foreground leading-relaxed pt-2">
-      {content}
+      {textContent}
       {isLoading && (
         <span className="inline-block w-1.5 h-4 ml-1 bg-primary/60 animate-pulse align-middle"></span>
       )}
